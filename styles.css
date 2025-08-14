@@ -98,8 +98,18 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
+.tab-btn[data-tab="favorites"]:hover {
+    background: rgba(255, 107, 107, 0.2);
+}
+
+.tab-btn[data-tab="favorites"].active {
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.9) 0%, rgba(255, 215, 0, 0.9) 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
 .favorites-count {
-    background: #ff6b6b;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ffd700 100%);
     color: white;
     border-radius: 50%;
     width: 20px;
@@ -109,6 +119,12 @@ body {
     justify-content: center;
     font-size: 0.8rem;
     font-weight: 600;
+    animation: countPulse 2s ease-in-out infinite;
+}
+
+@keyframes countPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
 
 /* Tab Content */
@@ -419,9 +435,18 @@ body {
 }
 
 .favorites-header h3 {
-    color: #333;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ffd700 50%, #4ecdc4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     font-weight: 600;
     margin: 0;
+    animation: favoritesGlow 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes favoritesGlow {
+    from { filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.5)); }
+    to { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8)); }
 }
 
 .clear-btn {
