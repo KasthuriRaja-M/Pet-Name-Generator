@@ -152,8 +152,9 @@ class PetNameGenerator {
             btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
         });
 
-        // Generate button
+        // Generate buttons
         document.getElementById('generateBtn').addEventListener('click', () => this.generateName());
+        document.getElementById('quickGenerateBtn').addEventListener('click', () => this.quickGenerateName());
 
         // Copy and favorite buttons (delegated)
         document.addEventListener('click', (e) => {
@@ -187,6 +188,45 @@ class PetNameGenerator {
             content.classList.remove('active');
         });
         document.getElementById(tabName).classList.add('active');
+    }
+
+    quickGenerateName() {
+        // Get all available names without any filters
+        let allNames = [];
+        Object.values(this.names).forEach(catNames => {
+            Object.values(catNames).forEach(genderNames => {
+                allNames = allNames.concat(genderNames);
+            });
+        });
+
+        // Generate random name
+        const randomName = allNames[Math.floor(Math.random() * allNames.length)];
+        
+        // Find which category and gender this name belongs to
+        let actualCategory = 'all';
+        let actualGender = 'all';
+        
+        for (const [cat, catNames] of Object.entries(this.names)) {
+            for (const [gen, names] of Object.entries(catNames)) {
+                if (names.includes(randomName)) {
+                    actualCategory = cat;
+                    actualGender = gen;
+                    break;
+                }
+            }
+            if (actualCategory !== 'all') break;
+        }
+
+        this.currentName = {
+            name: randomName,
+            category: actualCategory,
+            gender: actualGender,
+            timestamp: Date.now()
+        };
+
+        this.displayResult();
+        this.addToRecent();
+        this.showToast('Quick name generated!', 'success');
     }
 
     generateName() {
@@ -225,7 +265,7 @@ class PetNameGenerator {
                 const nameLength = name.length;
                 switch (length) {
                     case 'short': return nameLength >= 2 && nameLength <= 4;
-                    case 'medium': return nameLength >= 5 && nameLength <= 7;
+                    case 'medium': return nameLength >= 5 && name.length <= 7;
                     case 'long': return nameLength >= 8;
                     default: return true;
                 }
@@ -549,6 +589,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Add some fun Easter eggs
 document.addEventListener('keydown', (e) => {
+    // Press 'Q' for quick generate
+    if (e.key.toLowerCase() === 'q' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        const quickGenerateBtn = document.getElementById('quickGenerateBtn');
+        if (quickGenerateBtn && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            quickGenerateBtn.click();
+        }
+    }
+    
     // Press 'G' to generate a name
     if (e.key.toLowerCase() === 'g' && !e.ctrlKey && !e.altKey && !e.metaKey) {
         const generateBtn = document.getElementById('generateBtn');
@@ -566,7 +614,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Add loading state to generate button
+// Add loading state to generate buttons
 document.getElementById('generateBtn').addEventListener('click', function() {
     const originalText = this.innerHTML;
     this.innerHTML = '<span class="loading"></span> Generating...';
@@ -576,4 +624,15 @@ document.getElementById('generateBtn').addEventListener('click', function() {
         this.innerHTML = originalText;
         this.disabled = false;
     }, 500);
+});
+
+document.getElementById('quickGenerateBtn').addEventListener('click', function() {
+    const originalText = this.innerHTML;
+    this.innerHTML = '<span class="loading"></span> Quick...';
+    this.disabled = true;
+    
+    setTimeout(() => {
+        this.innerHTML = originalText;
+        this.disabled = false;
+    }, 300);
 });
