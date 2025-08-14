@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Name Generator - Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .test-error {
+            background: #ffe8e8;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pet Name Generator - Test Page</h1>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Manual Tests</h2>
+        <button onclick="testNameGeneration()">Test Name Generation</button>
+        <button onclick="testFilters()">Test Filters</button>
+        <button onclick="testFavorites()">Test Favorites</button>
+        <button onclick="testCopyFunction()">Test Copy Function</button>
+        <button onclick="runAllTests()">Run All Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Browser Compatibility</h2>
+        <div id="browserInfo"></div>
+    </div>
+
+    <script>
+        // Test results container
+        const testResults = document.getElementById('testResults');
+        const browserInfo = document.getElementById('browserInfo');
+
+        // Add test result
+        function addTestResult(testName, passed, message = '') {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = passed ? 'test-result' : 'test-error';
+            resultDiv.innerHTML = `
+                <strong>${testName}:</strong> ${passed ? 'PASSED' : 'FAILED'}
+                ${message ? `<br>${message}` : ''}
+            `;
+            testResults.appendChild(resultDiv);
+        }
+
+        // Test name generation
+        function testNameGeneration() {
+            try {
+                // Check if the main app is loaded
+                if (typeof PetNameGenerator !== 'undefined') {
+                    addTestResult('Name Generation Class', true, 'PetNameGenerator class is available');
+                } else {
+                    addTestResult('Name Generation Class', false, 'PetNameGenerator class not found');
+                    return;
+                }
+
+                // Test if names object exists
+                const generator = new PetNameGenerator();
+                if (generator.names && Object.keys(generator.names).length > 0) {
+                    addTestResult('Names Database', true, `Found ${Object.keys(generator.names).length} pet categories`);
+                } else {
+                    addTestResult('Names Database', false, 'No names found in database');
+                }
+
+                // Test name generation
+                const testName = generator.generateName();
+                if (testName) {
+                    addTestResult('Name Generation Function', true, 'Name generation working');
+                } else {
+                    addTestResult('Name Generation Function', false, 'Name generation failed');
+                }
+
+            } catch (error) {
+                addTestResult('Name Generation', false, `Error: ${error.message}`);
+            }
+        }
+
+        // Test filters
+        function testFilters() {
+            try {
+                const generator = new PetNameGenerator();
+                
+                // Test category filter
+                const dogNames = generator.names.dog;
+                if (dogNames && dogNames.male && dogNames.female && dogNames.unisex) {
+                    addTestResult('Category Filter', true, 'Dog category has male, female, and unisex names');
+                } else {
+                    addTestResult('Category Filter', false, 'Dog category missing gender categories');
+                }
+
+                // Test gender filter
+                if (dogNames.male.length > 0 && dogNames.female.length > 0 && dogNames.unisex.length > 0) {
+                    addTestResult('Gender Filter', true, 'All gender categories have names');
+                } else {
+                    addTestResult('Gender Filter', false, 'Some gender categories are empty');
+                }
+
+                // Test length filter
+                const shortNames = dogNames.male.filter(name => name.length >= 2 && name.length <= 4);
+                const mediumNames = dogNames.male.filter(name => name.length >= 5 && name.length <= 7);
+                const longNames = dogNames.male.filter(name => name.length >= 8);
+                
+                if (shortNames.length > 0 && mediumNames.length > 0 && longNames.length > 0) {
+                    addTestResult('Length Filter', true, 'Names available in all length categories');
+                } else {
+                    addTestResult('Length Filter', false, 'Missing names in some length categories');
+                }
+
+            } catch (error) {
+                addTestResult('Filters', false, `Error: ${error.message}`);
+            }
+        }
+
+        // Test favorites functionality
+        function testFavorites() {
+            try {
+                const generator = new PetNameGenerator();
+                
+                // Test favorites loading
+                const initialFavorites = generator.loadFavorites();
+                addTestResult('Favorites Loading', true, `Loaded ${initialFavorites.length} favorites`);
+
+                // Test favorites saving
+                const testFavorite = { name: 'TestPet', category: 'dog', gender: 'male', timestamp: Date.now() };
+                generator.favorites = [testFavorite];
+                generator.saveFavorites();
+                
+                // Reload and check
+                const newGenerator = new PetNameGenerator();
+                const savedFavorites = newGenerator.loadFavorites();
+                
+                if (savedFavorites.length > 0) {
+                    addTestResult('Favorites Saving', true, 'Favorites can be saved and loaded');
+                } else {
+                    addTestResult('Favorites Saving', false, 'Favorites not saved properly');
+                }
+
+                // Clean up test data
+                localStorage.removeItem('petNameFavorites');
+
+            } catch (error) {
+                addTestResult('Favorites', false, `Error: ${error.message}`);
+            }
+        }
+
+        // Test copy function
+        function testCopyFunction() {
+            try {
+                // Test if clipboard API is available
+                if (navigator.clipboard) {
+                    addTestResult('Clipboard API', true, 'Modern clipboard API available');
+                } else {
+                    addTestResult('Clipboard API', false, 'Using fallback copy method');
+                }
+
+                // Test fallback copy
+                const testText = 'Test Pet Name';
+                const textArea = document.createElement('textarea');
+                textArea.value = testText;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    addTestResult('Fallback Copy', true, 'Fallback copy method works');
+                } catch (err) {
+                    addTestResult('Fallback Copy', false, 'Fallback copy method failed');
+                }
+                
+                document.body.removeChild(textArea);
+
+            } catch (error) {
+                addTestResult('Copy Function', false, `Error: ${error.message}`);
+            }
+        }
+
+        // Run all tests
+        function runAllTests() {
+            testResults.innerHTML = ''; // Clear previous results
+            testNameGeneration();
+            testFilters();
+            testFavorites();
+            testCopyFunction();
+        }
+
+        // Check browser compatibility
+        function checkBrowserCompatibility() {
+            const features = {
+                'ES6 Classes': typeof class Test {} === 'function',
+                'Arrow Functions': typeof (() => {}) === 'function',
+                'Template Literals': typeof `test` === 'string',
+                'Local Storage': typeof localStorage !== 'undefined',
+                'Fetch API': typeof fetch !== 'undefined',
+                'Clipboard API': typeof navigator.clipboard !== 'undefined',
+                'CSS Grid': CSS.supports('display', 'grid'),
+                'CSS Flexbox': CSS.supports('display', 'flex'),
+                'CSS Variables': CSS.supports('--test', 'value')
+            };
+
+            browserInfo.innerHTML = '<h3>Browser Features:</h3>';
+            for (const [feature, supported] of Object.entries(features)) {
+                const status = supported ? '✅ Supported' : '❌ Not Supported';
+                browserInfo.innerHTML += `<div>${feature}: ${status}</div>`;
+            }
+
+            // Browser info
+            browserInfo.innerHTML += `
+                <h3>Browser Information:</h3>
+                <div>User Agent: ${navigator.userAgent}</div>
+                <div>Language: ${navigator.language}</div>
+                <div>Platform: ${navigator.platform}</div>
+            `;
+        }
+
+        // Initialize tests
+        window.addEventListener('load', () => {
+            checkBrowserCompatibility();
+            setTimeout(() => {
+                runAllTests();
+            }, 1000); // Wait for main app to load
+        });
+    </script>
+
+    <!-- Load the main application -->
+    <script src="script.js"></script>
+</body>
+</html>
