@@ -31,12 +31,28 @@ body {
     font-size: 2.5rem;
     font-weight: 700;
     margin-bottom: 10px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, #ff6b6b 0%, #ffd700 50%, #4ecdc4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    animation: titleGlow 2s ease-in-out infinite alternate;
 }
 
 .title i {
     margin-right: 15px;
     color: #ffd700;
+    animation: iconPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+    from { filter: drop-shadow(0 0 5px rgba(255, 107, 107, 0.5)); }
+    to { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8)); }
+}
+
+@keyframes iconPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
 
 .subtitle {
@@ -502,6 +518,7 @@ body {
     
     .title {
         font-size: 2rem;
+        animation: titleGlow 1.5s ease-in-out infinite alternate;
     }
     
     .nav-tabs {
@@ -551,6 +568,7 @@ body {
 @media (max-width: 480px) {
     .title {
         font-size: 1.8rem;
+        animation: titleGlow 1.2s ease-in-out infinite alternate;
     }
     
     .subtitle {
